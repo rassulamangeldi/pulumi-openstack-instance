@@ -4,6 +4,7 @@ import * as pulumi from "@pulumi/pulumi";
 export interface CustomSecGroupRuleArgs extends Omit<openstack.networking.SecGroupRuleArgs, 'direction' | 'ethertype' | 'securityGroupId' | 'remoteIpPrefix'> {
     ethertype?: 'IPv4' | 'IPv6';
     remoteIpPrefix?: string[];
+    port?: number;
 };
 
 export interface CustomSecGroupArgs {
@@ -16,6 +17,10 @@ export interface BaseSecGroupArgs extends openstack.networking.SecGroupArgs {
     rules: CustomSecGroupArgs;
     allowSelfIPv4?: boolean;
     allowSelfIPv6?: boolean;
+    allowIngressAllIPv4?: boolean;
+    allowIngressAllIPv6?: boolean;
+    allowEgressAllIPv4?: boolean;
+    allowEgressAllIPv6?: boolean;
 };
 
 export class SecGroup extends pulumi.ComponentResource {
@@ -28,8 +33,8 @@ export class SecGroup extends pulumi.ComponentResource {
         /**
          * Create SecGroup
          */
-        this.secGroup = this.createSecGroup(args.name, args, opts?.provider)
-            
+        this.secGroup = this.createSecGroup(args.name, {...args, deleteDefaultRules: true}, opts?.provider)
+
         /**
          * Create Self Rules
          */
@@ -55,6 +60,49 @@ export class SecGroup extends pulumi.ComponentResource {
             }, opts?.provider)
         }
 
+        if (args.allowIngressAllIPv4) {
+
+            this.createSecGroupRule(`${args.name}-all-ingress-ipv4-allow`, {
+                direction: "ingress",
+                ethertype: "IPv4",
+                securityGroupId: this.secGroup.id,
+                description: "Allow all Ingress IPv4 traffic",
+                remoteIpPrefix: "0.0.0.0/0",
+            }, opts?.provider)
+        }
+
+        if (args.allowIngressAllIPv6) {
+            this.createSecGroupRule(`${args.name}-all-ingress-ipv6-allow`, {
+                direction: "ingress",
+                ethertype: "IPv6",
+                securityGroupId: this.secGroup.id,
+                description: "Allow all Ingress IPv6 traffic",
+                remoteIpPrefix: "::/0",
+            }, opts?.provider)
+        }
+
+        if (args.allowEgressAllIPv4) {
+
+            this.createSecGroupRule(`${args.name}-all-egress-ipv4-allow`, {
+                direction: "egress",
+                ethertype: "IPv4",
+                securityGroupId: this.secGroup.id,
+                description: "Allow all Egress IPv4 traffic",
+                remoteIpPrefix: "0.0.0.0/0",
+            }, opts?.provider)
+        }
+
+        if (args.allowEgressAllIPv6) {
+            this.createSecGroupRule(`${args.name}-all-egress-ipv6-allow`, {
+                direction: "egress",
+                ethertype: "IPv6",
+                securityGroupId: this.secGroup.id,
+                description: "Allow all Egress IPv6 traffic",
+                remoteIpPrefix: "::/0",
+            }, opts?.provider)
+        }
+
+
         if (args.rules) {
 
             /**
@@ -62,25 +110,41 @@ export class SecGroup extends pulumi.ComponentResource {
              */
             Object.entries(args.rules).forEach(([direction, rules]) => {
                 rules.forEach((rule: any, ruleCounter: number) => {
-                  rule.remoteIpPrefix.forEach((prefix: any, prefixCounter: number) => {
-                    const ruleName = `${args.name}-${direction}-rule-${ruleCounter}-prefix-${prefixCounter}`;
-              
-                    new openstack.networking.SecGroupRule(ruleName, {
-                      direction,
-                      ethertype: rule.ethertype,
-                      securityGroupId: this.secGroup.id,
-                      description: rule.description,
-                      portRangeMax: rule.portRangeMax !== -1 ? rule.portRangeMax : undefined,
-                      portRangeMin: rule.portRangeMin !== -1 ? rule.portRangeMin : undefined,
-                      protocol: rule.protocol !== "any" ? rule.protocol : undefined,
-                      region: rule.region,
-                      remoteGroupId: rule.remoteGroupId,
-                      tenantId: rule.tenantId,
-                      remoteIpPrefix: prefix,
-                    }, { parent: this.secGroup, provider: opts?.provider });
-                  });
+                    rule.remoteIpPrefix.forEach((prefix: any, prefixCounter: number) => {
+                        const ruleName = `${args.name}-${direction}-rule-${ruleCounter}-prefix-${prefixCounter}`;
+                        
+                        if (rule.port) {
+                            this.createSecGroupRule(ruleName, {
+                                direction: direction,
+                                ethertype: rule.ethertype ?? "IPv4",
+                                securityGroupId: this.secGroup.id,
+                                description: rule.description,
+                                portRangeMax: rule.port,
+                                portRangeMin: rule.port,
+                                protocol: rule.protocol,
+                                region: rule.region,
+                                remoteGroupId: rule.remoteGroupId,
+                                remoteIpPrefix: prefix,
+                                tenantId: rule.tenantId
+                            }, opts?.provider)
+                        } else {
+                            this.createSecGroupRule(ruleName, {
+                                direction: direction,
+                                ethertype: rule.ethertype ?? "IPv4",
+                                securityGroupId: this.secGroup.id,
+                                description: rule.description,
+                                portRangeMax: rule.portRangeMax,
+                                portRangeMin: rule.portRangeMin,
+                                protocol: rule.protocol,
+                                region: rule.region,
+                                remoteGroupId: rule.remoteGroupId,
+                                remoteIpPrefix: prefix,
+                                tenantId: rule.tenantId
+                            }, opts?.provider)
+                        }
+                    });
                 });
-              });
+            });
         }
 
         this.registerOutputs({});
@@ -93,14 +157,14 @@ export class SecGroup extends pulumi.ComponentResource {
      * @param provider 
      * @returns 
     */
-    private createSecGroup(name: string, 
-        args: openstack.networking.SecGroupArgs, 
+    private createSecGroup(name: string,
+        args: openstack.networking.SecGroupArgs,
         provider: pulumi.ProviderResource | undefined): openstack.networking.SecGroup {
-    
+
         let secGroup = new openstack.networking.SecGroup(name, {
             ...args
         }, { parent: this, provider: provider })
-    
+
         return secGroup
     }
 
@@ -111,7 +175,7 @@ export class SecGroup extends pulumi.ComponentResource {
      * @param provider 
      * @returns 
      */
-    private createSecGroupRule(name: string, 
+    private createSecGroupRule(name: string,
         args: openstack.networking.SecGroupRuleArgs,
         provider: pulumi.ProviderResource | undefined): openstack.networking.SecGroupRule {
 
@@ -122,5 +186,5 @@ export class SecGroup extends pulumi.ComponentResource {
         return secGroupRule
     }
 
-    
+
 }
