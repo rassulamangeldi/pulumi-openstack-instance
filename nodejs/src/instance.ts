@@ -117,9 +117,7 @@ export class Instance extends pulumi.ComponentResource {
         instance: openstack.compute.Instance,
         provider: pulumi.ProviderResource | undefined): openstack.blockstorage.Volume {
 
-        let volume = new openstack.blockstorage.Volume(name, { name: name, ...args }, { parent: instance, provider: provider });
-
-        return volume
+        return new openstack.blockstorage.Volume(name, { name: name, ...args }, { parent: instance, provider: provider });
     };
 
     /**
@@ -133,9 +131,7 @@ export class Instance extends pulumi.ComponentResource {
         args: openstack.networking.PortArgs,
         provider: pulumi.ProviderResource | undefined): openstack.networking.Port {
 
-        let port = new openstack.networking.Port(name, { name: name, ...args }, { parent: this, provider: provider });
-
-        return port
+        return new openstack.networking.Port(name, { name: name, ...args }, { parent: this, provider: provider });
     };
 
     /**
@@ -148,9 +144,7 @@ export class Instance extends pulumi.ComponentResource {
     private createInstance(name: string, args: CustomInstanceArgs,
         provider: pulumi.ProviderResource | undefined): openstack.compute.Instance {
 
-        let instance = new openstack.compute.Instance(name, { ...args }, { parent: this, provider: provider });
-
-        return instance
+        return new openstack.compute.Instance(name, args, { parent: this, provider: provider });
     };
 
     /**
