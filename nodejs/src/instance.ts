@@ -161,16 +161,16 @@ export class Instance extends pulumi.ComponentResource {
         return this.createdInstances.map(x => x.id)
     };
 
-    public instanceIps(): openstack.networking.Port[] {
-        return this.createdPorts
-    };
-
     public instanceTags(): pulumi.Output<string[]>[] {
         return this.createdInstances.map(x => x.allTags)
     };
 
     public instanceMetadata(): pulumi.Output<{ [key: string]: any }>[] {
         return this.createdInstances.map(x => x.allMetadata)
+    };
+
+    public ports(): openstack.networking.Port[] {
+        return this.createdPorts
     };
 
 }

@@ -1,9 +1,6 @@
 import * as openstack from "@pulumi/openstack";
-import { input } from "@pulumi/openstack/types";
 import * as pulumi from "@pulumi/pulumi";
 
-
-// export interface CustomMembersArgs extends Omit<pulumi.Input<pulumi.Input<input.loadbalancer.MembersMember>[]>, 'poolId'> {};
 export interface CustomMembersArgs extends Omit<openstack.loadbalancer.MemberArgs, 'poolId'> {};
 
 export interface CustomPoolArgs extends openstack.loadbalancer.PoolArgs {
