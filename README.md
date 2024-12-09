@@ -10,6 +10,10 @@ This project provides Pulumi components for provisioning OpenStack infrastructur
   - [SecGroupRule](https://www.pulumi.com/registry/packages/openstack/api-docs/networking/secgrouprule/)
   - [Port](https://www.pulumi.com/registry/packages/openstack/api-docs/networking/port/)
   - [Volume](https://www.pulumi.com/registry/packages/openstack/api-docs/blockstorage/volume/)
+  - [LbLoadBalancerV2](https://www.pulumi.com/registry/packages/openstack/api-docs/lbloadbalancerv2/)
+  - [Listener](https://www.pulumi.com/registry/packages/openstack/api-docs/loadbalancer/listener/)
+  - [Pool](https://www.pulumi.com/registry/packages/openstack/api-docs/loadbalancer/pool/)
+  - [Members](https://www.pulumi.com/registry/packages/openstack/api-docs/loadbalancer/members/)
 
 This module follows good practices described in the OpenStack and Pulumi documentation, and leverages the experience of the author and contributors.
 
