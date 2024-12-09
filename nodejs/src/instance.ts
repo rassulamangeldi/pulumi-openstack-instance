@@ -23,6 +23,7 @@ export interface BaseInstanceArgs {
 export class Instance extends pulumi.ComponentResource {
 
     createdInstances: openstack.compute.Instance[] = [];
+    createdPorts: openstack.networking.Port[] = [];
 
     constructor(name: string, args: BaseInstanceArgs, opts?: pulumi.ComponentResourceOptions) {
         super("okassov:openstack:Instance", name, {}, opts);
@@ -40,19 +41,25 @@ export class Instance extends pulumi.ComponentResource {
             if (instanceArgs.portConfig) {
 
                 let portCounter = 0
-                let networks: { port: pulumi.Output<string> }[] = []
+                // let networks: { port: pulumi.Output<string> }[] = []
                 for (let portArgs of instanceArgs.portConfig) {
 
                     let portName: string = `${instanceArgs.name}-port-${portCounter}`
 
                     port = this.createPort(portName, portArgs, opts?.provider)
+                    this.createdPorts.push(port)
 
-                    networks.push({ port: port.id })
+                    // networks.push({ port: port.id })
 
                     portCounter += 1
                 }
 
-                instanceArgs["networks"] = networks
+                // instanceArgs["networks"] = networks
+                instanceArgs["networks"] = this.createdPorts.map(port => {
+                    return {
+                        port: port.id
+                    }
+                })
             };
 
             // Create Instance
@@ -152,6 +159,10 @@ export class Instance extends pulumi.ComponentResource {
      */
     public instanceIds(): pulumi.Output<string>[] {
         return this.createdInstances.map(x => x.id)
+    };
+
+    public instanceIps(): openstack.networking.Port[] {
+        return this.createdPorts
     };
 
     public instanceTags(): pulumi.Output<string[]>[] {
