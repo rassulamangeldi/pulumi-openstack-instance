@@ -33,7 +33,7 @@ export class SecGroup extends pulumi.ComponentResource {
         /**
          * Create SecGroup
          */
-        this.secGroup = this.createSecGroup(args.name, {...args, deleteDefaultRules: true}, opts?.provider)
+        this.secGroup = this.createSecGroup(args.name, {...args, deleteDefaultRules: true}, opts?.provider);
 
         /**
          * Create Self Rules
@@ -47,18 +47,18 @@ export class SecGroup extends pulumi.ComponentResource {
                 description: "Allow all self IPv4 traffic",
                 remoteGroupId: this.secGroup.id
             }, opts?.provider)
-        }
+        };
 
         if (args.allowSelfIPv6) {
 
-            this.createSecGroupRule(`${args.name}-self-ipv4-allow`, {
+            this.createSecGroupRule(`${args.name}-self-ipv6-allow`, {
                 direction: "ingress",
                 ethertype: "IPv6",
                 securityGroupId: this.secGroup.id,
                 description: "Allow all self IPv6 traffic",
                 remoteGroupId: this.secGroup.id
             }, opts?.provider)
-        }
+        };
 
         if (args.allowIngressAllIPv4) {
 
@@ -69,7 +69,7 @@ export class SecGroup extends pulumi.ComponentResource {
                 description: "Allow all Ingress IPv4 traffic",
                 remoteIpPrefix: "0.0.0.0/0",
             }, opts?.provider)
-        }
+        };
 
         if (args.allowIngressAllIPv6) {
             this.createSecGroupRule(`${args.name}-all-ingress-ipv6-allow`, {
@@ -79,7 +79,7 @@ export class SecGroup extends pulumi.ComponentResource {
                 description: "Allow all Ingress IPv6 traffic",
                 remoteIpPrefix: "::/0",
             }, opts?.provider)
-        }
+        };
 
         if (args.allowEgressAllIPv4) {
 
@@ -90,7 +90,7 @@ export class SecGroup extends pulumi.ComponentResource {
                 description: "Allow all Egress IPv4 traffic",
                 remoteIpPrefix: "0.0.0.0/0",
             }, opts?.provider)
-        }
+        };
 
         if (args.allowEgressAllIPv6) {
             this.createSecGroupRule(`${args.name}-all-egress-ipv6-allow`, {
@@ -100,7 +100,7 @@ export class SecGroup extends pulumi.ComponentResource {
                 description: "Allow all Egress IPv6 traffic",
                 remoteIpPrefix: "::/0",
             }, opts?.provider)
-        }
+        };
 
 
         if (args.rules) {
@@ -145,10 +145,10 @@ export class SecGroup extends pulumi.ComponentResource {
                     });
                 });
             });
-        }
+        };
 
         this.registerOutputs({});
-    }
+    };
 
     /**
      * 
@@ -161,12 +161,8 @@ export class SecGroup extends pulumi.ComponentResource {
         args: openstack.networking.SecGroupArgs,
         provider: pulumi.ProviderResource | undefined): openstack.networking.SecGroup {
 
-        let secGroup = new openstack.networking.SecGroup(name, {
-            ...args
-        }, { parent: this, provider: provider })
-
-        return secGroup
-    }
+        return new openstack.networking.SecGroup(name, args, { parent: this, provider: provider });
+    };
 
     /**
      * 
@@ -179,12 +175,6 @@ export class SecGroup extends pulumi.ComponentResource {
         args: openstack.networking.SecGroupRuleArgs,
         provider: pulumi.ProviderResource | undefined): openstack.networking.SecGroupRule {
 
-        let secGroupRule = new openstack.networking.SecGroupRule(name, {
-            ...args
-        }, { parent: this.secGroup, provider: provider })
-
-        return secGroupRule
-    }
-
-
-}
+        return new openstack.networking.SecGroupRule(name, args, { parent: this.secGroup, provider: provider });
+    };
+};
