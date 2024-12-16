@@ -41,7 +41,7 @@ export class Instance extends pulumi.ComponentResource {
             if (instanceArgs.portConfig) {
 
                 let portCounter = 0
-                // let networks: { port: pulumi.Output<string> }[] = []
+                let networks: { port: pulumi.Output<string> }[] = []
                 for (let portArgs of instanceArgs.portConfig) {
 
                     let portName: string = `${instanceArgs.name}-port-${portCounter}`
@@ -49,17 +49,12 @@ export class Instance extends pulumi.ComponentResource {
                     port = this.createPort(portName, portArgs, opts?.provider)
                     this.createdPorts.push(port)
 
-                    // networks.push({ port: port.id })
+                    networks.push({ port: port.id })
 
                     portCounter += 1
                 }
 
-                // instanceArgs["networks"] = networks
-                instanceArgs["networks"] = this.createdPorts.map(port => {
-                    return {
-                        port: port.id
-                    }
-                })
+                instanceArgs["networks"] = networks
             };
 
             // Create Instance
