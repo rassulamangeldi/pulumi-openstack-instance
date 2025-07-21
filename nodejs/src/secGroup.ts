@@ -3,7 +3,7 @@ import * as pulumi from "@pulumi/pulumi";
 
 export interface CustomSecGroupRuleArgs extends Omit<openstack.networking.SecGroupRuleArgs, 'direction' | 'ethertype' | 'securityGroupId' | 'remoteIpPrefix'> {
     ethertype?: 'IPv4' | 'IPv6';
-    remoteIpPrefix?: string[];
+    remoteIpPrefix?: pulumi.Input<string>[];
     port?: number;
 };
 
