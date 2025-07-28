@@ -13,14 +13,14 @@ export interface CustomListenerArgs extends Omit<openstack.loadbalancer.Listener
     pools: CustomPoolArgs[];
 };
 
-export interface BaseLoadBalancerArgs extends Omit<openstack.LbLoadbalancerV2Args, 'name'> {
+export interface BaseLoadBalancerArgs extends Omit<openstack.loadbalancer.LoadBalancerArgs, "name"> {
     name: string;
     listeners: CustomListenerArgs[];
 };
 
 export class LoadBalancer extends pulumi.ComponentResource {
 
-    loadBalancer: openstack.LbLoadbalancerV2;
+    loadBalancer: openstack.loadbalancer.LoadBalancer;
     listener!: openstack.loadbalancer.Listener;
     pool!: openstack.loadbalancer.Pool;
 
@@ -75,10 +75,10 @@ export class LoadBalancer extends pulumi.ComponentResource {
      * @returns 
      */
     private createLoadBalancer(name: string,
-        args: openstack.LbLoadbalancerV2Args,
-        provider: pulumi.ProviderResource | undefined): openstack.LbLoadbalancerV2 {
+        args: openstack.loadbalancer.LoadBalancerArgs,
+        provider: pulumi.ProviderResource | undefined): openstack.loadbalancer.LoadBalancer {
 
-        return new openstack.LbLoadbalancerV2(name, args, { parent: this, provider: provider });
+        return new openstack.loadbalancer.LoadBalancer(name, args, { parent: this, provider: provider });
     };
 
     /**
