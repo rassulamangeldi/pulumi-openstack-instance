@@ -110,9 +110,15 @@ export class SecGroup extends pulumi.ComponentResource {
              */
             Object.entries(args.rules).forEach(([direction, rules]) => {
                 rules.forEach((rule: any, ruleCounter: number) => {
-                    rule.remoteIpPrefix.forEach((prefix: any, prefixCounter: number) => {
-                        const ruleName = `${args.name}-${direction}-rule-${ruleCounter}-prefix-${prefixCounter}`;
-                        
+                    // Sort IP prefixes to ensure consistent ordering
+                    const sortedPrefixes = [...rule.remoteIpPrefix].sort();
+                    sortedPrefixes.forEach((prefix: any, prefixCounter: number) => {
+                        // Create deterministic rule name based on protocol, port, and IP
+                        const sanitizedPrefix = prefix.toString().replace(/[^a-zA-Z0-9]/g, '-');
+                        const port = rule.port || `${rule.portRangeMin || 'any'}-${rule.portRangeMax || 'any'}`;
+                        const protocol = rule.protocol || 'any';
+                        const ruleName = `${args.name}-${direction}-${protocol}-${port}-${sanitizedPrefix}`;
+
                         if (rule.port) {
                             this.createSecGroupRule(ruleName, {
                                 direction: direction,
